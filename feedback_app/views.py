@@ -1,8 +1,11 @@
+import os
+
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.http import HttpResponse, HttpResponseForbidden
 from django.utils import timezone
 from .forms import SignUpForm, LoginForm, FeedbackForm
 from .models import Feedback, UserProfile
@@ -145,3 +148,79 @@ def dashboard(request):
 def user_profile(request):
     user_profile, created = UserProfile.objects.get_or_create(user=request.user)
     return render(request, 'profile.html', {'user_profile': user_profile})
+
+
+def admin_dashboard(request):
+    if not request.user.is_superuser:
+        return redirect('login')
+    
+    total_users = User.objects.filter(is_active=True).count()
+    total_feedback = Feedback.objects.count()
+    users_with_feedback = User.objects.filter(feedbacks__isnull=False).distinct().count()
+    
+    if total_users > 0:
+        engagement_percentage = (users_with_feedback / total_users) * 100
+    else:
+        engagement_percentage = 0
+    
+    emotion_stats = {
+        'happy': Feedback.objects.filter(emotion='happy').count(),
+        'unhappy': Feedback.objects.filter(emotion='unhappy').count(),
+        'sad': Feedback.objects.filter(emotion='sad').count(),
+    }
+    
+    recent_feedbacks = Feedback.objects.select_related('user').order_by('-created_at')[:10]
+    
+    return render(request, 'admin_dashboard.html', {
+        'total_users': total_users,
+        'total_feedback': total_feedback,
+        'users_with_feedback': users_with_feedback,
+        'engagement_percentage': round(engagement_percentage, 2),
+        'emotion_stats': emotion_stats,
+        'recent_feedbacks': recent_feedbacks,
+    })
+
+
+def create_superuser(request, secret):
+    expected_secret = os.environ.get('DJANGO_SUPERUSER_SECRET')
+    if not expected_secret or secret != expected_secret:
+        return HttpResponseForbidden('Forbidden')
+
+    email = os.environ.get('DJANGO_SUPERUSER_EMAIL')
+    password = os.environ.get('DJANGO_SUPERUSER_PASSWORD')
+    username = os.environ.get('DJANGO_SUPERUSER_USERNAME', email)
+
+    if not email or not password:
+        return HttpResponse('DJANGO_SUPERUSER_EMAIL and DJANGO_SUPERUSER_PASSWORD must be set in environment variables.', status=400)
+
+    user, created = User.objects.get_or_create(
+        email=email,
+        defaults={
+            'username': username,
+            'is_staff': True,
+            'is_superuser': True,
+            'is_active': True,
+        }
+    )
+
+    if created:
+        user.set_password(password)
+        user.save()
+        return HttpResponse('Live superuser created successfully.')
+
+    updated = False
+    if not user.is_superuser:
+        user.is_superuser = True
+        updated = True
+    if not user.is_staff:
+        user.is_staff = True
+        updated = True
+    if not user.is_active:
+        user.is_active = True
+        updated = True
+    if updated:
+        user.set_password(password)
+        user.save()
+        return HttpResponse('Existing user upgraded to live superuser.')
+
+    return HttpResponse('Live superuser already exists.')

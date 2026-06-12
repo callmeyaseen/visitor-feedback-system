@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Feedback System{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <h1 class="mb-4"><i class="fas fa-chart-line"></i> Admin Dashboard</h1>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <div class="stat-number">{{ total_users }}</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <div class="stat-number">{{ users_with_feedback }}</div>
+                    <div class="stat-label">Users with Feedback</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <div class="stat-number">{{ total_feedback }}</div>
+                    <div class="stat-label">Total Feedback</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <div class="stat-number">{{ engagement_percentage }}%</div>
+                    <div class="stat-label">Engagement Rate</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Engagement Progress Bar -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title"><i class="fas fa-users"></i> User Engagement</h5>
+            <div class="progress" style="height: 30px;">
+                <div class="progress-bar bg-success" role="progressbar" 
+                     style="width: {{ engagement_percentage }}%;" 
+                     aria-valuenow="{{ engagement_percentage }}" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                    <strong>{{ engagement_percentage }}%</strong>
+                </div>
+            </div>
+            <p class="mt-2 text-muted">
+                <strong>{{ users_with_feedback }}</strong> out of <strong>{{ total_users }}</strong> users have provided feedback
+            </p>
+        </div>
+    </div>
+
+    <!-- Emotion Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 style="color: #10b981; font-size: 2.5rem;">😊</h2>
+                    <h5 class="card-title">Happy</h5>
+                    <p class="card-text" style="font-size: 1.5rem; color: #10b981; font-weight: bold;">
+                        {{ emotion_stats.happy }}
+                    </p>
+                    {% if total_feedback > 0 %}
+                    <p class="text-muted">{{ total_feedback|add:0 }} / {{ total_feedback }} total</p>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {% widthratio emotion_stats.happy total_feedback 100 %}%;">
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 style="color: #f59e0b; font-size: 2.5rem;">😐</h2>
+                    <h5 class="card-title">Unhappy</h5>
+                    <p class="card-text" style="font-size: 1.5rem; color: #f59e0b; font-weight: bold;">
+                        {{ emotion_stats.unhappy }}
+                    </p>
+                    {% if total_feedback > 0 %}
+                    <p class="text-muted">{{ total_feedback|add:0 }} / {{ total_feedback }} total</p>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar bg-warning" role="progressbar" 
+                             style="width: {% widthratio emotion_stats.unhappy total_feedback 100 %}%;">
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h2 style="color: #ef4444; font-size: 2.5rem;">😢</h2>
+                    <h5 class="card-title">Sad</h5>
+                    <p class="card-text" style="font-size: 1.5rem; color: #ef4444; font-weight: bold;">
+                        {{ emotion_stats.sad }}
+                    </p>
+                    {% if total_feedback > 0 %}
+                    <p class="text-muted">{{ total_feedback|add:0 }} / {{ total_feedback }} total</p>
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar bg-danger" role="progressbar" 
+                             style="width: {% widthratio emotion_stats.sad total_feedback 100 %}%;">
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Feedback -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="fas fa-list"></i> Recent Feedback</h5>
+        </div>
+        <div class="card-body">
+            {% if recent_feedbacks %}
+            <div class="table-responsive">
+                <table class="table table-hover table-sm">
+                    <thead class="table-light">
+                        <tr>
+                            <th>User</th>
+                            <th>Emotion</th>
+                            <th>Score</th>
+                            <th>Remarks</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for feedback in recent_feedbacks %}
+                        <tr>
+                            <td>
+                                <strong>{{ feedback.user.first_name|default:feedback.user.username }}</strong>
+                                <br>
+                                <small class="text-muted">{{ feedback.user.email }}</small>
+                            </td>
+                            <td>
+                                {% if feedback.emotion == 'happy' %}
+                                    <span class="badge bg-success">😊 Happy</span>
+                                {% elif feedback.emotion == 'unhappy' %}
+                                    <span class="badge bg-warning text-dark">😐 Unhappy</span>
+                                {% else %}
+                                    <span class="badge bg-danger">😢 Sad</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ feedback.score }}%</strong>
+                            </td>
+                            <td>
+                                {% if feedback.remarks %}
+                                    <small>{{ feedback.remarks|truncatewords:10 }}</small>
+                                {% else %}
+                                    <small class="text-muted">-</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small>{{ feedback.created_at|date:"M d, Y H:i" }}</small>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center mb-0">
+                <i class="fas fa-inbox"></i> No feedback yet
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Admin Links -->
+    <div class="mt-4 text-center">
+        <a href="/admin/" class="btn btn-secondary btn-lg">
+            <i class="fas fa-cog"></i> Go to Django Admin Panel
+        </a>
+    </div>
+</div>
+
+<style>
+    .admin-dashboard h1 {
+        color: white;
+        font-weight: bold;
+        margin-bottom: 2rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-card {
+        border: none;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-card .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+    .stat-card .stat-label {
+        font-size: 0.95rem;
+        opacity: 0.95;
+    }
+
+    .card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+        border: none !important;
+    }
+
+    .table-responsive {
+        border-radius: 10px;
+    }
+
+    .progress {
+        border-radius: 10px;
+        background: #e5e7eb;
+    }
+
+    .progress-bar {
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.85rem;
+        color: white;
+    }
+</style>
+{% endblock %}

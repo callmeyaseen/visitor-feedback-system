@@ -9,5 +9,7 @@ urlpatterns = [
     path('feedback/', views.feedback_view, name='feedback'),
     path('thank-you/', views.thank_you, name='thank_you'),
     path('dashboard/', views.dashboard, name='dashboard'),
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('profile/', views.user_profile, name='profile'),
+    path('create-superuser/<str:secret>/', views.create_superuser, name='create_superuser'),
 ]
