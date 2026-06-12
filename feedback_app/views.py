@@ -45,16 +45,18 @@ def login_view(request):
             email = form.cleaned_data.get('email')
             password = form.cleaned_data.get('password')
             
-            try:
-                user = User.objects.get(email=email)
-                user = authenticate(request, username=user.username, password=password)
+            users = User.objects.filter(email=email)
+            if users.count() == 1:
+                user = authenticate(request, username=users[0].username, password=password)
                 if user is not None:
                     login(request, user)
                     messages.success(request, f'Welcome back, {user.first_name or user.username}!')
                     return redirect('feedback')
                 else:
                     messages.error(request, 'Invalid password.')
-            except User.DoesNotExist:
+            elif users.count() > 1:
+                messages.error(request, 'Multiple accounts are registered with this email. Please contact support.')
+            else:
                 messages.error(request, 'Email not found.')
     else:
         form = LoginForm()
