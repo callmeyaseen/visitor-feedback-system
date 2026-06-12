@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Feedback - Feedback System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body p-5">
+        <div class="text-center mb-5">
+            <h2 class="card-title">{{ question }}</h2>
+            <p class="text-muted">Please select your emotional response</p>
+        </div>
+
+        <form method="post" id="feedbackForm">
+            {% csrf_token %}
+            
+            <div class="emoji-container">
+                <div class="emoji-option">
+                    <input type="radio" id="id_emotion_0" name="emotion" value="happy" required>
+                    <label for="id_emotion_0">
+                        <div class="emoji-face">😊</div>
+                        <div class="emoji-label">Happy</div>
+                        <small class="text-success">100%</small>
+                    </label>
+                </div>
+
+                <div class="emoji-option">
+                    <input type="radio" id="id_emotion_1" name="emotion" value="unhappy" required>
+                    <label for="id_emotion_1">
+                        <div class="emoji-face">😐</div>
+                        <div class="emoji-label">Unhappy</div>
+                        <small class="text-warning">50%</small>
+                    </label>
+                </div>
+
+                <div class="emoji-option">
+                    <input type="radio" id="id_emotion_2" name="emotion" value="sad" required>
+                    <label for="id_emotion_2">
+                        <div class="emoji-face">😢</div>
+                        <div class="emoji-label">Sad</div>
+                        <small class="text-danger">0%</small>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group mt-4">
+                <label for="id_remarks" class="form-label">Remarks (optional)</label>
+                {{ form.remarks }}
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-primary btn-lg">Submit Feedback</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+        const selected = document.querySelector('input[name="emotion"]:checked');
+        if (!selected) {
+            e.preventDefault();
+            alert('Please select an emotion before submitting');
+        }
+    });
+</script>
+{% endblock %}

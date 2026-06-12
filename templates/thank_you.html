@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Thank You - Feedback System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body p-5 text-center">
+        <div class="mb-4">
+            {% if feedback.emotion == 'happy' %}
+                <div style="font-size: 120px;">😊</div>
+                <h2 class="card-title text-success">Thank You!</h2>
+            {% elif feedback.emotion == 'unhappy' %}
+                <div style="font-size: 120px;">😐</div>
+                <h2 class="card-title text-warning">Thank You for Your Feedback</h2>
+            {% else %}
+                <div style="font-size: 120px;">😢</div>
+                <h2 class="card-title text-danger">We'll Do Better</h2>
+            {% endif %}
+        </div>
+
+        <p class="text-muted mb-4">
+            Your feedback has been recorded with a score of <strong>{{ feedback.score }}%</strong>
+        </p>
+
+        <div class="alert alert-info">
+            <strong>Your Feedback:</strong>
+            <br>
+            Emotion: <strong>{{ feedback.get_emotion_display }}</strong>
+            <br>
+            Submitted at: <strong>{{ feedback.created_at|date:"F d, Y H:i" }}</strong>
+            {% if feedback.remarks %}
+                <br>
+                Remarks: <strong>{{ feedback.remarks }}</strong>
+            {% endif %}
+        </div>
+
+        <div class="d-grid gap-2 mt-4">
+            <a href="{% url 'feedback' %}" class="btn btn-primary">Submit Another Feedback</a>
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary">View Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

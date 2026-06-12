@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Feedback System{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body p-5">
+        <div class="text-center mb-4">
+            <h2 class="card-title">Welcome Back</h2>
+            <p class="text-muted">Login to share your feedback</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group mb-3">
+                <label for="id_email" class="form-label">Email Address</label>
+                {{ form.email }}
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="id_password" class="form-label">Password</label>
+                {{ form.password }}
+            </div>
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg">Login</button>
+            </div>
+        </form>
+
+        <div class="text-center mt-4">
+            <p class="text-muted">Don't have an account? <a href="{% url 'signup' %}">Sign up here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

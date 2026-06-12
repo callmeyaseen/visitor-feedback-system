@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Feedback System{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="text-white">Your Feedback Dashboard</h2>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_feedback }}</div>
+            <div class="stat-label">Total Feedbacks</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-number">{{ avg_score }}%</div>
+            <div class="stat-label">Average Score</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-number">{{ emotion_counts.happy }}</div>
+            <div class="stat-label">Happy Responses 😊</div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Emotion Breakdown</h5>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>😊 Happy</span>
+                        <span class="badge bg-success">{{ emotion_counts.happy }}</span>
+                    </div>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-success" style="width: {{ emotion_percentages.happy|floatformat:1 }}%"></div>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>😐 Unhappy</span>
+                        <span class="badge bg-warning">{{ emotion_counts.unhappy }}</span>
+                    </div>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-warning" style="width: {{ emotion_percentages.unhappy|floatformat:1 }}%"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span>😢 Sad</span>
+                        <span class="badge bg-danger">{{ emotion_counts.sad }}</span>
+                    </div>
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar bg-danger" style="width: {{ emotion_percentages.sad|floatformat:1 }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Score Distribution</h5>
+                <canvas id="scoreChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Feedback History</h5>
+    </div>
+    <div class="card-body">
+        {% if user_feedbacks %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Emotion</th>
+                            <th>Score</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for feedback in user_feedbacks %}
+                            <tr>
+                                <td>{{ feedback.created_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    {% if feedback.emotion == 'happy' %}
+                                        <span class="badge bg-success">😊 Happy</span>
+                                    {% elif feedback.emotion == 'unhappy' %}
+                                        <span class="badge bg-warning">😐 Unhappy</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">😢 Sad</span>
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ feedback.score }}%</strong></td>
+                                <td>{{ feedback.remarks|default:'-' }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-muted text-center py-4">No feedbacks yet. <a href="{% url 'feedback' %}">Submit one now!</a></p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="d-grid gap-2 mt-4 mb-4">
+    <a href="{% url 'feedback' %}" class="btn btn-primary btn-lg">Submit New Feedback</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+    const ctx = document.getElementById('scoreChart').getContext('2d');
+    const scoreData = {
+        happy: {{ emotion_counts.happy }},
+        unhappy: {{ emotion_counts.unhappy }},
+        sad: {{ emotion_counts.sad }}
+    };
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['😊 Happy (100%)', '😐 Unhappy (50%)', '😢 Sad (0%)'],
+            datasets: [{
+                data: [scoreData.happy, scoreData.unhappy, scoreData.sad],
+                backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                borderColor: ['#059669', '#d97706', '#dc2626'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
