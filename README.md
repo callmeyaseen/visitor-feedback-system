@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Feedback System - Django Project
 
 A simple and elegant feedback collection system with user authentication and emotional response tracking (Happy, Unhappy, Sad).
@@ -231,3 +232,7 @@ gunicorn feedback_project.wsgi --bind 0.0.0.0:8000
 - Enable HTTPS and secure cookies
 - Set `ALLOWED_HOSTS` to your real domain only
 - Rotate the `DJANGO_SECRET_KEY` for each deployment
+=======
+# visitor-feedback-system
+A Django-based visitor feedback management system with authentication and analytics.
+>>>>>>> 454f98c14ddd42f33e083c32fdee1ab7b62b1dfc
